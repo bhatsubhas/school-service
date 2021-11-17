@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,28 +28,31 @@ public class StudentController {
 	}
 
 	@GetMapping
-	public List<Student> getStudents() {
-		return studentService.getStudents();
+	public ResponseEntity<List<Student>> getStudents() {
+		return new ResponseEntity<>(studentService.getStudents(), HttpStatus.OK);
 	}
 
 	@PostMapping
-	public void registerNewStudent(@RequestBody Student student) {
-		studentService.addNewStudent(student);
+	public ResponseEntity<Student> registerNewStudent(@RequestBody Student student) {
+		return new ResponseEntity<>(studentService.addNewStudent(student), HttpStatus.CREATED);
 	}
 
 	@DeleteMapping(path = "{studentId}")
-	public void deleteStudent(@PathVariable("studentId") Long studentId) {
+	public ResponseEntity<DeleteMessage> deleteStudent(@PathVariable("studentId") Long studentId) {
 		studentService.deleteStudent(studentId);
+		DeleteMessage deleteMessage = DeleteMessage.createDeleteMessage(String.format("Student with id %d deleted", studentId));
+		return new ResponseEntity<>(deleteMessage, HttpStatus.OK);
 	}
 
 	// @formatter:off
 	@PutMapping(path = "{studentId}")
-	public void updateStudent(@PathVariable("studentId") Long studentId, 
+	public ResponseEntity<Student> updateStudent(@PathVariable("studentId") Long studentId, 
 							  @RequestParam(required = false) String name,
 							  @RequestParam(required = false) String email) {
-		studentService.updateStudent(studentId, 
+		Student student = studentService.updateStudent(studentId, 
 									 Optional.ofNullable(name), 
 									 Optional.ofNullable(email));
+		return new ResponseEntity<>(student, HttpStatus.OK);
 	}
 	// @formatter:on
 
